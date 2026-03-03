@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panama Film Commission — Dashboard Ejecutivo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --navy: #07111f;
+      --navy2: #0d1e35;
+      --navy3: #12294a;
+      --gold: #c8a951;
+      --gold2: #e6c96a;
+      --gold3: #f5e199;
+      --green: #00c875;
+      --cyan: #00d4ff;
+      --red: #ff4757;
+      --white: #f0f4f8;
+      --gray: #8fa8c8;
+      --card: rgba(13, 30, 53, 0.85);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND GRID ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(200, 169, 81, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200, 169, 81, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── FILM STRIP TOP ── */
+    .filmstrip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 8px;
+      z-index: 100;
+      background: repeating-linear-gradient(90deg,
+          var(--gold) 0, var(--gold) 12px,
+          var(--navy) 12px, var(--navy) 20px);
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 28px 48px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(200, 169, 81, 0.2);
+      background: linear-gradient(180deg, rgba(7, 17, 31, 0.98) 0%, transparent 100%);
+      margin-top: 8px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-box {
+      height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-img {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(200, 169, 81, 0.2));
+    }
+
+    .header-title h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 4px;
+      text-shadow: 0 4px 15px rgba(200, 169, 81, 0.3);
+      margin-bottom: 4px;
+    }
+
+    .header-title p {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gray);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .header-right .date {
+      font-size: 11px;
+      color: var(--gray);
+      letter-spacing: 2px;
+    }
+
+    .header-right .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      color: var(--gold);
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* ── TAB NAV ── */
+    .tab-nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      gap: 4px;
+      padding: 0 48px;
+      border-bottom: 1px solid rgba(200, 169, 81, 0.15);
+      background: rgba(7, 17, 31, 0.9);
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .tab-btn:hover {
+      color: var(--gold2);
+    }
+
+    .tab-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* ── MAIN CONTENT ── */
+    main {
+      position: relative;
+      z-index: 5;
+      padding: 32px 48px 48px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(200, 169, 81, 0.4), transparent);
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid rgba(200, 169, 81, 0.15);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: default;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(200, 169, 81, 0.15);
+      border-color: rgba(200, 169, 81, 0.4);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .kpi-card.gold::before {
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+    }
+
+    .kpi-card.green::before {
+      background: linear-gradient(90deg, var(--green), #00ff9d);
+    }
+
+    .kpi-card.cyan::before {
+      background: linear-gradient(90deg, var(--cyan), #7cf0ff);
+    }
+
+    .kpi-card.red::before {
+      background: linear-gradient(90deg, var(--red), #ff9f43);
+    }
+
+    .kpi-card.purple::before {
+      background: linear-gradient(90deg, #a855f7, #7c3aed);
+    }
+
+    .kpi-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 8px rgba(200, 169, 81, 0.4));
+    }
+
+    .kpi-value {
+      font-family: 'Cinzel', serif;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--gold), var(--gold3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .kpi-card.green .kpi-value {
+      background: linear-gradient(135deg, var(--green), #b6ffd9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .kpi-card.cyan .kpi-value {
+      background: linear-gradient(135deg, var(--cyan), #a0f0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gray);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: rgba(143, 168, 200, 0.7);
+      margin-top: 4px;
+    }
+
+    .kpi-badge {
+      display: inline-block;
+      background: rgba(0, 200, 117, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(0, 200, 117, 0.3);
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+
+    .kpi-badge.neg {
+      background: rgba(255, 71, 87, 0.1);
+      color: var(--red);
+      border-color: rgba(255, 71, 87, 0.3);
+    }
+
+    /* ── CHART GRID ── */
+    .chart-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .chart-grid-3 {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .chart-grid-full {
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: var(--card);
+      border: 1px solid rgba(200, 169, 81, 0.12);
+      border-radius: 12px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-card::after {
+      content: '';
+      position: absolute;
+      top: -60%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(200, 169, 81, 0.04), transparent);
+      pointer-events: none;
+    }
+
+    .chart-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .chart-subtitle {
+      font-size: 10px;
+      color: var(--gray);
+      margin-bottom: 16px;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    /* ── YEAR SELECTOR ── */
+    .year-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .year-btn {
+      padding: 8px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(200, 169, 81, 0.3);
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray);
+      letter-spacing: 1px;
+      transition: all 0.25s;
+    }
+
+    .year-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .year-btn.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: var(--navy);
+      border-color: transparent;
+      box-shadow: 0 4px 16px rgba(200, 169, 81, 0.3);
+    }
+
+    /* ── MANAGEMENT HIGHLIGHT ── */
+    .mgmt-banner {
+      background: linear-gradient(135deg,
+          rgba(0, 200, 117, 0.1), rgba(0, 200, 117, 0.05));
+      border: 1px solid rgba(0, 200, 117, 0.25);
+      border-left: 3px solid var(--green);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mgmt-banner .badge {
+      background: var(--green);
+      color: var(--navy);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .mgmt-banner p {
+      font-size: 12px;
+      color: var(--white);
+      line-height: 1.6;
+    }
+
+    .mgmt-banner p strong {
+      color: var(--green);
+    }
+
+    /* ── TABLE ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .data-table th {
+      background: rgba(200, 169, 81, 0.1);
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(200, 169, 81, 0.2);
+    }
+
+    .data-table td {
+      padding: 10px 14px;
+      color: var(--white);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .data-table tr:hover td {
+      background: rgba(200, 169, 81, 0.05);
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .pill-gold {
+      background: rgba(200, 169, 81, 0.15);
+      color: var(--gold);
+    }
+
+    .pill-green {
+      background: rgba(0, 200, 117, 0.15);
+      color: var(--green);
+    }
+
+    .pill-cyan {
+      background: rgba(0, 212, 255, 0.15);
+      color: var(--cyan);
+    }
+
+    .pill-purple {
+      background: rgba(168, 85, 247, 0.15);
+      color: #a855f7;
+    }
+
+    .pill-red {
+      background: rgba(255, 71, 87, 0.15);
+      color: var(--red);
+    }
+
+    /* ── COMPARISON BAR ── */
+    .compare-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .compare-label {
+      width: 80px;
+      font-size: 11px;
+      color: var(--gray);
+    }
+
+    .compare-bar-wrap {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      height: 28px;
+      position: relative;
+    }
+
+    .compare-bar {
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--navy);
+      transition: width 1.2s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .compare-val {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--gray);
+    }
+
+    /* ── HIGHLIGHT NUMBER ── */
+    .highlight-number {
+      font-family: 'Cinzel', serif;
+      font-size: 48px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold), var(--gold3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--navy2);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(200, 169, 81, 0.3);
+      border-radius: 3px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes countUp {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulseGold {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(200, 169, 81, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(200, 169, 81, 0);
+      }
+    }
+
+    .kpi-card {
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .kpi-card:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .kpi-card:nth-child(2) {
+      animation-delay: 0.10s;
+    }
+
+    .kpi-card:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+
+    .kpi-card:nth-child(4) {
+      animation-delay: 0.20s;
+    }
+
+    .kpi-card:nth-child(5) {
+      animation-delay: 0.25s;
+    }
+
+    .chart-card {
+      animation: fadeUp 0.7s ease both;
+      animation-delay: 0.3s;
+    }
+
+    /* ── RETORNO HIGHLIGHT ── */
+    .retorno-card {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 212, 255, 0.03));
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .retorno-item {
+      text-align: center;
+    }
+
+    .retorno-item .val {
+      font-family: 'Cinzel', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .retorno-item .lbl {
+      font-size: 10px;
+      color: var(--gray);
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+      body {
+        background: var(--navy) !important;
+        color: var(--white) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .filmstrip {
+        display: none;
+      }
+
+      .tab-nav {
+        display: none;
+      }
+
+      .tab-panel {
+        display: block !important;
+        page-break-after: always;
+        padding-top: 20px;
+      }
+
+      .tab-panel:last-child {
+        page-break-after: auto;
+      }
+
+      main {
+        padding: 0;
+        max-width: none;
+      }
+
+      .kpi-card,
+      .chart-card,
+      .retorno-card,
+      header {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid rgba(200, 169, 81, 0.3) !important;
+        background: var(--navy) !important;
+      }
+
+      canvas {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+
+      @page {
+        size: landscape;
+        margin: 1cm;
+      }
+    }
+
+    /* responsive */
+    @media(max-width:1200px) {
+      .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .chart-grid-3 {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      main {
+        padding: 24px;
+      }
+
+      header {
+        padding: 20px 24px;
+      }
+
+      .tab-nav {
+        padding: 0 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="filmstrip"></div>
+
+  <!-- ═══════════════════════ HEADER ═══════════════════════ -->
+  <header>
+    <div class="header-left">
+      <div class="logo-box"><img src="logo.png" alt="PFC Logo" class="logo-img"></div>
+      <div class="header-title">
+        <h1>PANAMA FILM COMMISSION</h1>
+        <p>Dashboard Ejecutivo · Registro General de Producciones</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="date" id="live-date"></div>
+      <div class="subtitle">Producción de la Comisión Fílmica</div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════ TAB NAV ═══════════════════════ -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('resumen')">📊 Resumen General</button>
+    <button class="tab-btn" onclick="showTab('gestion')">🏆 Gestión 2024–2026</button>
+    <button class="tab-btn" onclick="showTab('anual')">📅 Análisis Anual</button>
+    <button class="tab-btn" onclick="showTab('detalle')">🎯 Detalle por Tipo</button>
+  </div>
+
+  <!-- ═══════════════════════ MAIN ═══════════════════════════ -->
+  <main>
+
+    <!-- ════════════ TAB 1: RESUMEN GENERAL ════════════ -->
+    <div class="tab-panel active" id="tab-resumen">
+
+      <div class="section-title">Indicadores Clave 2022 – 2026</div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card gold">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-value" data-count="68407000">B/.68.4M</div>
+          <div class="kpi-label">Inversión Total Atraída</div>
+          <div class="kpi-sub">2022 – 2026 acumulado</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-icon">🎬</div>
+          <div class="kpi-value">145</div>
+          <div class="kpi-label">Producciones Totales</div>
+          <div class="kpi-sub">41 + 33 + 29 + 32 + 10</div>
+        </div>
+        <div class="kpi-card cyan">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-value">6,380</div>
+          <div class="kpi-label">Personal Total Generado</div>
+          <div class="kpi-sub">Empleo directo en producciones</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-icon">🌍</div>
+          <div class="kpi-value">25+</div>
+          <div class="kpi-label">Países de Origen</div>
+          <div class="kpi-sub">Presencia global en Panamá</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-icon">🔄</div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-label">Producciones RETORNO</div>
+          <div class="kpi-sub">Clientes que regresan a filmar</div>
+        </div>
+      </div>
+
+      <div class="chart-grid-3">
+        <div class="chart-card">
+          <div class="chart-title">Inversión por Año</div>
+          <div class="chart-subtitle">Millones B/. — evolución 2022–2026</div>
+          <canvas id="chart-inv-anual" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Producciones por Año</div>
+          <div class="chart-subtitle">Número total de producciones</div>
+          <canvas id="chart-prods-anual" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Mix por Tipo</div>
+          <div class="chart-subtitle">2024–2026 por categoría</div>
+          <canvas id="chart-tipo-donut" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">Personal Nacional vs Extranjero</div>
+          <div class="chart-subtitle">Comparativo por año</div>
+          <canvas id="chart-personal" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Top 8 Países de Origen</div>
+          <div class="chart-subtitle">2024–2026 número de producciones</div>
+          <canvas id="chart-paises" height="200"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════ TAB 2: GESTIÓN ════════════ -->
+    <div class="tab-panel" id="tab-gestion">
+
+      <div class="mgmt-banner">
+        <div class="badge">⭐ GESTIÓN</div>
+        <p>Desde <strong>Junio 2024</strong>, la Comisión Fílmica ha alcanzado niveles históricos de inversión y
+          producción.
+          En solo <strong>2 años completos + 2026 en curso</strong>, se han atraído más de <strong>B/. 51.7
+            millones</strong> —
+          representando el <strong>75.6% de la inversión total histórica</strong>.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card gold">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-value">B/.51.7M</div>
+          <div class="kpi-label">Inversión Jun 2024–2026</div>
+          <div class="kpi-badge">+354% vs 2022–2023</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-icon">🎬</div>
+          <div class="kpi-value">71</div>
+          <div class="kpi-label">Producciones en Gestión</div>
+          <div class="kpi-badge">+5% vs período anterior</div>
+        </div>
+        <div class="kpi-card cyan">
+          <div class="kpi-icon">🏆</div>
+          <div class="kpi-value">B/.25.0M</div>
+          <div class="kpi-label">Récord 2024</div>
+          <div class="kpi-badge">Año histórico</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-value">4,275</div>
+          <div class="kpi-label">Empleos Generados</div>
+          <div class="kpi-badge">+103% vs 2022–2023</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-icon">🎯</div>
+          <div class="kpi-value">B/.1.9M</div>
+          <div class="kpi-label">2026 (2 meses)</div>
+          <div class="kpi-badge">Año en curso</div>
+        </div>
+      </div>
+
+      <div class="retorno-card">
+        <div class="retorno-item">
+          <div class="val">12</div>
+          <div class="lbl">Producciones RETORNO</div>
+        </div>
+        <div class="retorno-item">
+          <div class="val">B/.23.6M</div>
+          <div class="lbl">Inversión de RETORNOs</div>
+        </div>
+        <div class="retorno-item">
+          <div class="val">45.6%</div>
+          <div class="lbl">% Inversión por RETORNOs</div>
+        </div>
+      </div>
+
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">Antes vs Durante Gestión</div>
+          <div class="chart-subtitle">Comparativo de indicadores clave</div>
+          <canvas id="chart-antes-despues" height="240"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Crecimiento de Inversión</div>
+          <div class="chart-subtitle">Evolución anual — eje logarítmico</div>
+          <canvas id="chart-crecimiento" height="240"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-grid-full">
+        <div class="chart-card">
+          <div class="chart-title">Distribución Mensual de Inversión 2025</div>
+          <div class="chart-subtitle">Millones B/. — el año más activo mensualmente</div>
+          <canvas id="chart-mensual-2025" height="160"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════ TAB 3: ANÁLISIS ANUAL ════════════ -->
+    <div class="tab-panel" id="tab-anual">
+
+      <div class="section-title">Selecciona el Año</div>
+      <div class="year-selector">
+        <button class="year-btn" onclick="selectYear(2022,this)">2022</button>
+        <button class="year-btn" onclick="selectYear(2023,this)">2023</button>
+        <button class="year-btn active" onclick="selectYear(2024,this)">2024</button>
+        <button class="year-btn" onclick="selectYear(2025,this)">2025</button>
+        <button class="year-btn" onclick="selectYear(2026,this)">2026</button>
+      </div>
+
+      <div class="kpi-grid" id="annual-kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+
+      <div class="chart-grid-2" style="margin-top:20px">
+        <div class="chart-card">
+          <div class="chart-title">Inversión Mensual</div>
+          <div class="chart-subtitle" id="annual-inv-sub">Distribución por mes</div>
+          <canvas id="chart-annual-monthly" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Tipos de Producción</div>
+          <div class="chart-subtitle">Mix del año seleccionado</div>
+          <canvas id="chart-annual-tipo" height="220"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════ TAB 4: DETALLE TIPO ════════════ -->
+    <div class="tab-panel" id="tab-detalle">
+      <div class="section-title">Análisis por Tipo de Producción 2024–2026</div>
+
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">Inversión por Tipo</div>
+          <div class="chart-subtitle">Total B/. acumulado 2024–2026</div>
+          <canvas id="chart-tipo-inv" height="260"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Producciones por Tipo por Año</div>
+          <div class="chart-subtitle">Comparativa de mix anual</div>
+          <canvas id="chart-tipo-stack" height="260"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-grid-full">
+        <div class="chart-card">
+          <div class="chart-title">Ranking de Producciones por Inversión</div>
+          <div class="chart-subtitle">Top 10 producciones más grandes 2024–2026</div>
+          <canvas id="chart-top10" height="180"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // DATA
+    // ═══════════════════════════════════════════════════════════════
+    const DATA = {
+      years: [2022, 2023, 2024, 2025, 2026],
+      inv: [5505000, 11167000, 24979000, 24843000, 1913000],
+      prods: [41, 33, 29, 32, 10],
+      nac: [391, 435, 1176, 675, 134],
+      ext: [666, 613, 951, 1205, 134],
+      total: [1057, 1048, 2127, 1880, 268],
+
+      tipo: {
+        'TV Show': [0, 0, 9, 13, 1],
+        'Documental': [0, 0, 6, 7, 5],
+        'Contenido Online': [0, 0, 3, 3, 3],
+        'Película': [0, 0, 6, 0, 1],
+        'Noticiero': [0, 0, 1, 5, 0],
+        'Comercial': [0, 0, 2, 2, 1],
+        'Festival': [0, 0, 1, 1, 0],
+        'Otro': [0, 0, 1, 1, 0],
+      },
+
+      monthly2025: {
+        ENE: 2292500, FEB: 60000, MAR: 31500, ABR: 1260000,
+        MAY: 3510000, JUN: 15000, JUL: 180000, AGO: 5015000,
+        SEP: 7428700, OCT: 4819000, NOV: 231520, DIC: 40000
+      },
+
+      monthly2024: {
+        ENE: 2300000, FEB: 164000, MAR: 32500, ABR: 1694000,
+        MAY: 38500, JUN: 29000, JUL: 8208903, AGO: 8190910,
+        SEP: 952000, OCT: 3370000, NOV: 1500, DIC: 10000
+      },
+
+      monthly2022: {
+        ENE: 8000, FEB: 14000, MAR: 15000, ABR: 2000, MAY: 144397,
+        JUN: 1000000, JUL: 250000, AGO: 450000, SEP: 2000000, OCT: 325000,
+        NOV: 170000, DIC: 330700
+      },
+
+      monthly2023: {
+        ENE: 1500000, FEB: 10000, MAR: 35000, ABR: 5000, MAY: 560000,
+        JUN: 35000, JUL: 600000, AGO: 10500, SEP: 1695000, OCT: 6570000,
+        NOV: 90000, DIC: 57000
+      },
+
+      monthly2026: {
+        ENE: 1707500, FEB: 206000
+      },
+
+      paises: {
+        'EUA': 35, 'Canadá': 7, 'Reino Unido': 4, 'China': 4,
+        'Francia': 3, 'Inglaterra': 3, 'Alemania': 3, 'España': 2
+      },
+
+      top10: [
+        { name: 'Koh Lanta France (Paragon)', inv: 4800000, yr: 2025 },
+        { name: 'Survivor / Robinson (Paragon)', inv: 4800000, yr: 2025 },
+        { name: 'Premios Juventud (Magic Dreams)', inv: 5000000, yr: 2025 },
+        { name: 'Greenlight (Paragon)', inv: 7000000, yr: 2024 },
+        { name: 'Dondi T2 (Panama Locations)', inv: 8208903, yr: 2024 },
+        { name: 'Coolie (Goodgate Panama)', inv: 2300000, yr: 2024 },
+        { name: 'Beast Games 2 (Panama Locations)', inv: 3500000, yr: 2025 },
+        { name: 'Premios Juventud (Deloitte)', inv: 2500000, yr: 2025 },
+        { name: '7 days on Island (Verite)', inv: 600000, yr: 2026 },
+        { name: 'Killing of a Nation (Jaguar)', inv: 1500000, yr: 2024 },
+      ].sort((a, b) => b.inv - a.inv)
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART DEFAULTS
+    // ═══════════════════════════════════════════════════════════════
+    Chart.defaults.color = '#8fa8c8';
+    Chart.defaults.font.family = 'Montserrat';
+    Chart.defaults.font.size = 11;
+
+    const PALETTE = {
+      gold: '#c8a951',
+      gold2: '#e6c96a',
+      green: '#00c875',
+      cyan: '#00d4ff',
+      red: '#ff4757',
+      purple: '#a855f7',
+      blue: '#3b82f6',
+      orange: '#f97316',
+    };
+    const YEAR_COLORS = {
+      2022: '#4a7bc8', 2023: '#7030a0',
+      2024: '#0d9b5a', 2025: '#c8a951', 2026: '#c55a11'
+    };
+
+    const gridOpts = {
+      color: 'rgba(255,255,255,0.04)',
+      drawTicks: false
+    };
+    const tickOpts = { padding: 8 };
+
+    const charts = {};
+    function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Investment by Year
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartInvAnual() {
+      const ctx = document.getElementById('chart-inv-anual');
+      destroyChart('inv-anual');
+      charts['inv-anual'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.years,
+          datasets: [{
+            label: 'Inversión B/.',
+            data: DATA.inv.map(v => v / 1e6),
+            backgroundColor: DATA.years.map(y => YEAR_COLORS[y] + 'bb'),
+            borderColor: DATA.years.map(y => YEAR_COLORS[y]),
+            borderWidth: 2,
+            borderRadius: 6,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: c => `B/. ${(c.raw).toFixed(2)}M`
+              }
+            }
+          },
+          scales: {
+            x: { grid: gridOpts, ticks: tickOpts },
+            y: {
+              grid: gridOpts, ticks: {
+                ...tickOpts,
+                callback: v => `$${v}M`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Productions by Year
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartProdsAnual() {
+      const ctx = document.getElementById('chart-prods-anual');
+      destroyChart('prods-anual');
+      charts['prods-anual'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: DATA.years,
+          datasets: [{
+            label: 'Producciones',
+            data: DATA.prods,
+            borderColor: PALETTE.cyan,
+            backgroundColor: 'rgba(0,212,255,0.1)',
+            pointBackgroundColor: PALETTE.cyan,
+            pointRadius: 6,
+            pointHoverRadius: 9,
+            fill: true, tension: 0.4,
+            borderWidth: 2.5
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: gridOpts, ticks: tickOpts },
+            y: { grid: gridOpts, ticks: tickOpts, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Tipo Donut
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartTipoDonut() {
+      const ctx = document.getElementById('chart-tipo-donut');
+      destroyChart('tipo-donut');
+      const tipos = Object.keys(DATA.tipo);
+      const vals = tipos.map(t => DATA.tipo[t].slice(2).reduce((a, b) => a + b, 0));
+      const colors = [PALETTE.cyan, PALETTE.gold, PALETTE.green, PALETTE.red,
+      PALETTE.purple, '#f97316', '#ec4899', '#14b8a6'];
+      charts['tipo-donut'] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: tipos,
+          datasets: [{
+            data: vals,
+            backgroundColor: colors.map(c => c + 'cc'),
+            borderColor: colors,
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          cutout: '62%',
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Personal Nacional vs Ext
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartPersonal() {
+      const ctx = document.getElementById('chart-personal');
+      destroyChart('personal');
+      charts['personal'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: DATA.years,
+          datasets: [
+            {
+              label: 'Nacional',
+              data: DATA.nac,
+              backgroundColor: 'rgba(0,200,117,0.7)',
+              borderColor: PALETTE.green, borderWidth: 1.5,
+              borderRadius: 4
+            },
+            {
+              label: 'Extranjero',
+              data: DATA.ext,
+              backgroundColor: 'rgba(0,212,255,0.5)',
+              borderColor: PALETTE.cyan, borderWidth: 1.5,
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { boxWidth: 12, padding: 16 } } },
+          scales: {
+            x: { grid: gridOpts, ticks: tickOpts, stacked: false },
+            y: { grid: gridOpts, ticks: tickOpts }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Top Paises
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartPaises() {
+      const ctx = document.getElementById('chart-paises');
+      destroyChart('paises');
+      const labels = Object.keys(DATA.paises);
+      const vals = Object.values(DATA.paises);
+      charts['paises'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Producciones',
+            data: vals,
+            backgroundColor: [PALETTE.gold + 'cc', PALETTE.green + 'cc', PALETTE.cyan + 'cc',
+            PALETTE.purple + 'cc', PALETTE.red + 'cc', PALETTE.blue + 'cc',
+              '#f97316cc', '#ec4899cc'],
+            borderColor: [PALETTE.gold, PALETTE.green, PALETTE.cyan,
+            PALETTE.purple, PALETTE.red, PALETTE.blue, '#f97316', '#ec4899'],
+            borderWidth: 1.5, borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: gridOpts, ticks: tickOpts },
+            y: { grid: { display: false }, ticks: { ...tickOpts, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Antes vs Después (Radar)
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartAntesDespues() {
+      const ctx = document.getElementById('chart-antes-despues');
+      destroyChart('antes-despues');
+      charts['antes-despues'] = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Inversión (M)', 'N° Producciones', 'Personal Total', 'RETORNO', 'Países'],
+          datasets: [
+            {
+              label: '2022–2023 (Antes)',
+              data: [16.67, 74, 2105, 0, 15],
+              borderColor: PALETTE.purple,
+              backgroundColor: 'rgba(168,85,247,0.12)',
+              pointBackgroundColor: PALETTE.purple,
+              borderWidth: 2
+            },
+            {
+              label: 'Jun 2024–2026 (Gestión)',
+              data: [51.74, 71, 4275, 12, 22],
+              borderColor: PALETTE.gold,
+              backgroundColor: 'rgba(200,169,81,0.15)',
+              pointBackgroundColor: PALETTE.gold,
+              borderWidth: 2.5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { boxWidth: 12, padding: 16, font: { size: 11 } } } },
+          scales: {
+            r: {
+              grid: { color: 'rgba(255,255,255,0.06)' },
+              angleLines: { color: 'rgba(255,255,255,0.06)' },
+              ticks: { display: false, stepSize: 20 },
+              pointLabels: { font: { size: 11, family: 'Montserrat' }, color: '#8fa8c8' }
+            }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Crecimiento
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartCrecimiento() {
+      const ctx = document.getElementById('chart-crecimiento');
+      destroyChart('crecimiento');
+      charts['crecimiento'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: DATA.years,
+          datasets: [
+            {
+              label: 'Inversión B/.',
+              data: DATA.inv.map(v => v / 1e6),
+              borderColor: PALETTE.gold,
+              backgroundColor: 'rgba(200,169,81,0.08)',
+              fill: true, tension: 0.4, borderWidth: 3,
+              pointBackgroundColor: DATA.years.map(y => YEAR_COLORS[y]),
+              pointRadius: 7, pointHoverRadius: 10,
+            },
+            {
+              label: 'Personal',
+              data: DATA.total.map(v => v / 100),
+              borderColor: PALETTE.cyan,
+              backgroundColor: 'rgba(0,212,255,0.04)',
+              fill: true, tension: 0.4, borderWidth: 2,
+              pointBackgroundColor: PALETTE.cyan,
+              pointRadius: 5, borderDash: [4, 4],
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { boxWidth: 12, padding: 16 } },
+            tooltip: {
+              callbacks: {
+                label: c => c.datasetIndex === 0
+                  ? `B/. ${c.raw.toFixed(2)}M`
+                  : `${(c.raw * 100).toFixed(0)} personas`
+              }
+            }
+          },
+          scales: {
+            x: { grid: gridOpts, ticks: tickOpts },
+            y: { grid: gridOpts, ticks: { ...tickOpts, callback: v => `${v}M` } }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Monthly 2025
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartMensual2025() {
+      const ctx = document.getElementById('chart-mensual-2025');
+      destroyChart('mensual-2025');
+      const labels = Object.keys(DATA.monthly2025);
+      const vals = Object.values(DATA.monthly2025).map(v => v / 1e6);
+      const bgColors = vals.map(v => v > 4 ? `${PALETTE.gold}dd` : v > 1 ? `${PALETTE.cyan}99` : `${PALETTE.green}66`);
+      charts['mensual-2025'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Inversión M B/.',
+            data: vals,
+            backgroundColor: bgColors,
+            borderColor: vals.map(v => v > 4 ? PALETTE.gold : v > 1 ? PALETTE.cyan : PALETTE.green),
+            borderWidth: 1.5, borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => `B/. ${c.raw.toFixed(2)}M` } }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: tickOpts },
+            y: { grid: gridOpts, ticks: { ...tickOpts, callback: v => `B/.${v}M` } }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Tipo Inversión (Tab 4)
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartTipoInv() {
+      const ctx = document.getElementById('chart-tipo-inv');
+      destroyChart('tipo-inv');
+      const tipoInv = {
+        'TV Show': 8208903 + 1500000 + 1250000 + 3500000 + 4800000 + 4800000 + 5000000 + 2500000 + 20000 + 10000 + 7000 + 231520 + 180000 + 10000 + 1900000 + 115000,
+        'Película': 2300000 + 1500000 + 920000 + 950000 + 104500,
+        'Documental': 25000 + 15000 + 12000 + 4000 + 8500 + 100000 + 145000 + 30000 + 10000 + 10000 + 40000 + 5000 + 60000 + 16000,
+        'Comercial': 700000 + 88700 + 40000 + 94000,
+        'Contenido Online': 15000 + 10000 + 15000 + 10000 + 600000 + 900000 + 112000,
+        'Noticiero': 1500 + 3000 + 3000 + 3000 + 1500,
+        'Festival': 0, 'Otro': 12000 + 1000 + 8000
+      };
+      const labels = Object.keys(tipoInv).filter(k => tipoInv[k] > 0);
+      const vals = labels.map(k => tipoInv[k] / 1e6);
+      const colors = [PALETTE.cyan, PALETTE.gold, PALETTE.green, PALETTE.purple, PALETTE.orange, PALETTE.red, '#ec4899'];
+      charts['tipo-inv'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Inversión M B/.',
+            data: vals,
+            backgroundColor: colors.slice(0, labels.length).map(c => c + 'cc'),
+            borderColor: colors.slice(0, labels.length),
+            borderWidth: 2, borderRadius: 8
+          }]
+        },
+        options: {
+          indexAxis: 'y', responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => `B/. ${c.raw.toFixed(2)}M` } }
+          },
+          scales: {
+            x: { grid: gridOpts, ticks: { ...tickOpts, callback: v => `$${v}M` } },
+            y: { grid: { display: false }, ticks: { ...tickOpts, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Tipo Stack (Tab 4)
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartTipoStack() {
+      const ctx = document.getElementById('chart-tipo-stack');
+      destroyChart('tipo-stack');
+      const yrs = [2024, 2025, 2026];
+      const yIdxMap = { 2024: 2, 2025: 3, 2026: 4 };
+      const tipos = ['TV Show', 'Documental', 'Película', 'Contenido Online', 'Comercial', 'Noticiero', 'Festival'];
+      const colors = [PALETTE.cyan, PALETTE.gold, PALETTE.green, PALETTE.purple, PALETTE.orange, PALETTE.red, '#14b8a6'];
+      charts['tipo-stack'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: yrs,
+          datasets: tipos.map((t, i) => ({
+            label: t,
+            data: yrs.map(y => DATA.tipo[t]?.[yIdxMap[y]] || 0),
+            backgroundColor: colors[i] + 'aa',
+            borderColor: colors[i],
+            borderWidth: 1.5, borderRadius: 4
+          }))
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { boxWidth: 10, padding: 8, font: { size: 10 } } } },
+          scales: {
+            x: { stacked: true, grid: gridOpts, ticks: tickOpts },
+            y: { stacked: true, grid: gridOpts, ticks: tickOpts }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHART: Top 10 (Tab 4)
+    // ═══════════════════════════════════════════════════════════════
+    function buildChartTop10() {
+      const ctx = document.getElementById('chart-top10');
+      destroyChart('top10');
+      const sorted = DATA.top10.sort((a, b) => b.inv - a.inv);
+      const labels = sorted.map(d => d.name.length > 35 ? d.name.slice(0, 35) + '…' : d.name);
+      const vals = sorted.map(d => d.inv / 1e6);
+      const bgs = sorted.map(d => YEAR_COLORS[d.yr] + 'bb');
+      const borders = sorted.map(d => YEAR_COLORS[d.yr]);
+      charts['top10'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Inversión M B/.',
+            data: vals,
+            backgroundColor: bgs,
+            borderColor: borders,
+            borderWidth: 2, borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y', responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => `B/. ${(c.raw).toFixed(2)}M` } }
+          },
+          scales: {
+            x: { grid: gridOpts, ticks: { ...tickOpts, callback: v => `$${v}M` } },
+            y: { grid: { display: false }, ticks: { ...tickOpts, font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // TAB ANNUAL - Year selector
+    // ═══════════════════════════════════════════════════════════════
+    const annualChartInst = { monthly: null, tipo: null };
+    let currentYear = 2024;
+
+    function getMonthlyData(yr) {
+      const m = {
+        2022: DATA.monthly2022, 2023: DATA.monthly2023,
+        2024: DATA.monthly2024, 2025: DATA.monthly2025,
+        2026: DATA.monthly2026
+      };
+      return m[yr] || {};
+    }
+    function getTipoData(yr) {
+      const idx = DATA.years.indexOf(yr);
+      const result = {};
+      Object.keys(DATA.tipo).forEach(t => {
+        result[t] = DATA.tipo[t][idx] || 0;
+      });
+      return result;
+    }
+
+    function selectYear(yr, btn) {
+      currentYear = yr;
+      document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      buildAnnualCharts(yr);
+      buildAnnualKPIs(yr);
+    }
+
+    function buildAnnualKPIs(yr) {
+      const idx = DATA.years.indexOf(yr);
+      const inv = DATA.inv[idx];
+      const prods = DATA.prods[idx];
+      const nac = DATA.nac[idx];
+      const ext = DATA.ext[idx];
+      const tot = DATA.total[idx];
+      const prevInv = idx > 0 ? DATA.inv[idx - 1] : null;
+      const delta = prevInv ? Math.round((inv - prevInv) / prevInv * 100) : null;
+
+      const container = document.getElementById('annual-kpis');
+      container.innerHTML = `
+    <div class="kpi-card gold">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-value">B/.${(inv / 1e6).toFixed(1)}M</div>
+      <div class="kpi-label">Inversión ${yr}</div>
+      ${delta !== null ? `<span class="kpi-badge ${delta < 0 ? 'neg' : ''}">${delta > 0 ? '+' : ''}${delta}% vs ${yr - 1}</span>` : ''}
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-icon">🎬</div>
+      <div class="kpi-value">${prods}</div>
+      <div class="kpi-label">Producciones</div>
+      <div class="kpi-sub">Año ${yr}</div>
+    </div>
+    <div class="kpi-card cyan">
+      <div class="kpi-icon">🇵🇦</div>
+      <div class="kpi-value">${nac}</div>
+      <div class="kpi-label">Personal Nacional</div>
+      <div class="kpi-sub">${Math.round(nac / (nac + ext) * 100)}% del total</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-icon">✈️</div>
+      <div class="kpi-value">${ext}</div>
+      <div class="kpi-label">Personal Extranjero</div>
+      <div class="kpi-sub">Total: ${tot} personas</div>
+    </div>
+  `;
+    }
+
+    function buildAnnualCharts(yr) {
+      // Monthly
+      destroyChart('annual-monthly');
+      const mData = getMonthlyData(yr);
+      const mLabels = Object.keys(mData);
+      const mVals = Object.values(mData).map(v => v / 1e6);
+      const mColors = mVals.map(v => v > 5 ? PALETTE.gold : v > 1 ? PALETTE.cyan : PALETTE.green);
+      charts['annual-monthly'] = new Chart(document.getElementById('chart-annual-monthly'), {
+        type: 'bar',
+        data: {
+          labels: mLabels,
+          datasets: [{
+            label: 'Inversión M B/.',
+            data: mVals,
+            backgroundColor: mColors.map(c => c + 'aa'),
+            borderColor: mColors,
+            borderWidth: 1.5, borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => `B/. ${c.raw.toFixed(2)}M` } }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: tickOpts },
+            y: { grid: gridOpts, ticks: { ...tickOpts, callback: v => `$${v}M` } }
+          }
+        }
+      });
+
+      // Tipo
+      destroyChart('annual-tipo');
+      const tData = getTipoData(yr);
+      const tLabels = Object.keys(tData).filter(k => tData[k] > 0);
+      const tVals = tLabels.map(k => tData[k]);
+      const tColors = [PALETTE.cyan, PALETTE.gold, PALETTE.green, PALETTE.purple,
+      PALETTE.orange, PALETTE.red, '#ec4899', '#14b8a6'];
+      charts['annual-tipo'] = new Chart(document.getElementById('chart-annual-tipo'), {
+        type: 'doughnut',
+        data: {
+          labels: tLabels,
+          datasets: [{
+            data: tVals,
+            backgroundColor: tColors.slice(0, tLabels.length).map(c => c + 'cc'),
+            borderColor: tColors.slice(0, tLabels.length),
+            borderWidth: 2, hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true, cutout: '55%',
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } } }
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // TAB NAVIGATION
+    // ═══════════════════════════════════════════════════════════════
+    function showTab(id) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      event.currentTarget.classList.add('active');
+
+      // Build charts on first show
+      if (id === 'resumen') buildAllResumen();
+      if (id === 'gestion') buildAllGestion();
+      if (id === 'anual') { buildAnnualKPIs(currentYear); buildAnnualCharts(currentYear); }
+      if (id === 'detalle') buildAllDetalle();
+    }
+
+    function buildAllResumen() {
+      buildChartInvAnual();
+      buildChartProdsAnual();
+      buildChartTipoDonut();
+      buildChartPersonal();
+      buildChartPaises();
+    }
+    function buildAllGestion() {
+      buildChartAntesDespues();
+      buildChartCrecimiento();
+      buildChartMensual2025();
+    }
+    function buildAllDetalle() {
+      buildChartTipoInv();
+      buildChartTipoStack();
+      buildChartTop10();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // LIVE DATE
+    // ═══════════════════════════════════════════════════════════════
+    function setDate() {
+      const d = new Date();
+      const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('live-date').textContent =
+        d.toLocaleDateString('es-PA', opts).toUpperCase();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+    window.addEventListener('load', () => {
+      setDate();
+      buildAllResumen();
+      buildAnnualKPIs(2024);
+      buildAnnualCharts(2024);
+    });
+  </script>
+</body>
+
+</html>
